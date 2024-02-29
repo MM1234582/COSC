@@ -20,7 +20,7 @@ using namespace std;
 
 struct task
 {
-    string name;
+    char name;
     int WCET;
     int period;
     int initWCET;
@@ -44,7 +44,7 @@ struct infoFromMain
 class TaskInterval
 {
 public:
-    string name;
+    char name;
     int startTime;
     int endTime;
     bool stopped;
@@ -182,9 +182,9 @@ string scheduler(infoFromMain input)
             TaskInterval temp;
             temp.startTime = i;
             temp.endTime = i + 1;
-            temp.name = "Idle";
+            temp.name = 'I';
 
-            if (intervalContainer[intervalContainer.size() - 1].name == "Idle")
+            if (intervalContainer[intervalContainer.size() - 1].name == 'I')
             {
                 intervalContainer[intervalContainer.size() - 1].endTime++;
             }
@@ -200,7 +200,14 @@ string scheduler(infoFromMain input)
     for (int i = 0; i < intervalContainer.size(); i++)
     {
         int runtime = intervalContainer.at(i).endTime - intervalContainer.at(i).startTime;
-        result = result + intervalContainer.at(i).name + "(" + to_string(runtime) + ")";
+        if (intervalContainer.at(i).name == 'I')
+        {
+            result = result + "Idle" + "(" + to_string(runtime) + ")";
+        }
+        else
+        {
+            result = result + intervalContainer.at(i).name + "(" + to_string(runtime) + ")";
+        }
         if (i != intervalContainer.size() - 1)
         {
             result = result + ", ";
@@ -234,7 +241,7 @@ int main()
 {
     vector<infoFromMain> input;
     string line;
-    while (getline(cin, line))
+    while (getline(cin, line) && line != "\0")
     {
         stringstream ss(line);
         char name;

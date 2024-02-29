@@ -1,13 +1,87 @@
 #include <unistd.h>
 #include <iostream>
-#include <string.h>
+#include <string>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <strings.h>
+#include <fstream>
+#include <vector>
+#include <sstream>
+
+using namespace std;
+
+struct task
+{
+    char name;
+    int WCET;
+    int period;
+    int initWCET;
+    task(char id, int worst, int per)
+    {
+        name = id;
+        WCET = worst;
+        initWCET = worst;
+        period = per;
+    }
+};
+
+struct infoFromMain
+{
+    std::vector<task> tasks;
+    double *utilization;
+    int hyperperiod;
+    string schedule;
+};
+
+class TaskInterval
+{
+public:
+    char name;
+    int startTime;
+    int endTime;
+    bool stopped;
+};
 
 int main(int argc, char *argv[])
 {
+    vector<infoFromMain> input;
+    string line;
+    /*
+    while (getline(cin, line))
+    {
+        stringstream ss(line);
+        char name;
+        int worst;
+        int per;
+
+        infoFromMain tempInfo;
+
+        // Gather input data
+        while (ss >> name >> worst >> per)
+        {
+            task temp = task(name, worst, per);
+
+            tempInfo.tasks.push_back(temp);
+        }
+        input.push_back(tempInfo);
+    }
+    */
+
+    char name = 'D';
+    int worst = 7;
+    int per = 10;
+    task temp = task(name, worst, per);
+
+    cout << "Task Info:" << endl;
+    cout << "\tName: " << temp.name << endl;
+    cout << "\tWorst: " << temp.WCET << endl;
+    cout << "\tPer: " << temp.period << endl;
+    infoFromMain tempInfo;
+    tempInfo.tasks.push_back(temp);
+    tempInfo.schedule = "Testing!";
+
     int sockfd, portno, n;
     std::string buffer;
     struct sockaddr_in serv_addr;
@@ -42,38 +116,24 @@ int main(int argc, char *argv[])
         std::cerr << "ERROR connecting" << std::endl;
         exit(0);
     }
-    std::cout << "Please enter the message: ";
-    std::getline(std::cin, buffer);
-    int msgSize = sizeof(buffer);
-    n = write(sockfd, &msgSize, sizeof(int));
+
+    n = write(sockfd, &tempInfo, sizeof(infoFromMain));
     if (n < 0)
     {
         std::cerr << "ERROR writing to socket" << std::endl;
         exit(0);
     }
-    n = write(sockfd, buffer.c_str(), msgSize);
-    if (n < 0)
-    {
-        std::cerr << "ERROR writing to socket" << std::endl;
-        exit(0);
-    }
-    n = read(sockfd, &msgSize, sizeof(int));
+
+    char test;
+
+    n = read(sockfd, &test, sizeof(char));
     if (n < 0)
     {
         std::cerr << "ERROR reading from socket" << std::endl;
         exit(0);
     }
-    char *tempBuffer = new char[msgSize + 1];
-    bzero(tempBuffer, msgSize + 1);
-    n = read(sockfd, tempBuffer, msgSize);
-    if (n < 0)
-    {
-        std::cerr << "ERROR reading from socket" << std::endl;
-        exit(0);
-    }
-    buffer = tempBuffer;
-    delete[] tempBuffer;
-    std::cout << "Message from server: " << buffer << std::endl;
     close(sockfd);
+
+    std::cout << test << std::endl;
     return 0;
 }
